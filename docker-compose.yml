@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  localstack:
+    container_name: "${LOCALSTACK_DOCKER_NAME-localstack_main}"
+    image: localstack/localstack
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+    environment:
+      - DEBUG=${DEBUG-}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - AWS_DEFAULT_REGION=us-east-1
+    volumes:
+      - "./docker/localstack/money-transfer.json:/etc/localstack/init/ready.d/money-transfer.json"
+      - "./docker/localstack/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh"
+      - localstack_data:/var/lib/localstack
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  mongodb:
+    image: docker.io/bitnami/mongodb:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGODB_ROOT_PASSWORD=123456
+      - MONGODB_USERNAME=user
+      - MONGODB_PASSWORD=123456
+      - MONGODB_DATABASE=money-transfer
+
+volumes:
+  localstack_data:
+  mongodb_data:
